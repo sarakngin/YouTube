@@ -130,74 +130,8 @@
         <!-- New Release, Most Listen, Trending, etc. -->
         <div class="section">
             <div>
-                <div class="section-title">New Release</div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="New Release">
-                    <h3>Album 1</h3>
-                </div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="New Release">
-                    <h3>Album 2</h3>
-                </div>
-            </div>
-            <div>
-                <div class="section-title">Most Listen</div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Most Listen">
-                    <h3>Track 1</h3>
-                </div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Most Listen">
-                    <h3>Track 2</h3>
-                </div>
-            </div>
-            <div>
-                <div class="section-title">Trending</div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Trending">
-                    <h3>Song 1</h3>
-                </div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Trending">
-                    <h3>Song 2</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional sections -->
-        <div class="section">
-            <div>
-                <div class="section-title">From Library</div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Library">
-                    <h3>Playlist 1</h3>
-                </div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Library">
-                    <h3>Playlist 2</h3>
-                </div>
-            </div>
-            <div>
-                <div class="section-title">Quick Pick</div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Quick Pick">
-                    <h3>Song 3</h3>
-                </div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Quick Pick">
-                    <h3>Song 4</h3>
-                </div>
-            </div>
-            <div>
-                <div class="section-title">Radio For You</div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Radio For You">
-                    <h3>Radio 1</h3>
-                </div>
-                <div class="card">
-                    <img src="https://via.placeholder.com/250x150" alt="Radio For You">
-                    <h3>Radio 2</h3>
-                </div>
+                <div class="section-title">Trending Music</div>
+                <div id="trending-videos"></div>
             </div>
         </div>
 
@@ -208,6 +142,31 @@
     </div>
 
     <script>
+        // YouTube API Key (replace this with your own YouTube API key)
+        const API_KEY = 'YOUR_YOUTUBE_API_KEY';
+        
+        // Function to load popular music videos
+        function loadTrendingVideos() {
+            fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=US&videoCategoryId=10&key=$AIzaSyAGtretGxxrfWsqK0RQcvUyDvcVgxJES8g`)
+            .then(response => response.json())
+            .then(data => {
+                const videos = data.items;
+                const videoContainer = document.getElementById('trending-videos');
+                videoContainer.innerHTML = ''; // Clear previous content
+                
+                videos.forEach(video => {
+                    const videoElement = document.createElement('div');
+                    videoElement.classList.add('card');
+                    videoElement.innerHTML = `
+                        <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}">
+                        <h3>${video.snippet.title}</h3>
+                    `;
+                    videoContainer.appendChild(videoElement);
+                });
+            })
+            .catch(error => console.log('Error fetching data:', error));
+        }
+
         // Load YouTube API
         function loadYouTubeAPI() {
             var tag = document.createElement('script');
@@ -222,7 +181,7 @@
             player = new YT.Player('player', {
                 height: '390',
                 width: '640',
-                videoId: 'dQw4w9WgXcQ', // Replace with any YouTube video ID
+                videoId: 'dQw4w9WgXcQ', // Default video ID
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange
@@ -242,8 +201,12 @@
             }
         }
 
-        // Load YouTube API
+        // Initialize the app
         loadYouTubeAPI();
+        loadTrendingVideos();  // Load trending videos
+
+        // Update the trending videos every second
+        setInterval(loadTrendingVideos, 1000);
     </script>
 
 </body>
