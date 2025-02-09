@@ -3,211 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Music Player</title>
+    <title>YouTube Music Clone</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #121212;
-            color: white;
-            display: flex;
-        }
-
-        /* Sidebar styles */
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background-color: #181818;
-            padding-top: 20px;
-            position: fixed;
-        }
-        .sidebar a {
-            display: block;
-            color: #B3B3B3;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 18px;
-        }
-        .sidebar a:hover {
-            background-color: #333;
-            color: white;
-        }
-
-        /* Main content area styles */
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: 100%;
-        }
-
-        .search-bar {
-            background-color: #181818;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            width: 50%;
-        }
-
-        .search-bar input {
-            background-color: #181818;
-            color: white;
-            border: none;
-            outline: none;
-            width: 100%;
-            padding: 8px 10px;
-            border-radius: 20px;
-            font-size: 16px;
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-
-        .section {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 10px;
-        }
-
-        .card {
-            background-color: #1C1C1C;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-        }
-
-        .card img {
-            width: 100%;
-            border-radius: 8px;
-            height: 150px;
-            object-fit: cover;
-        }
-
-        .card h3 {
-            margin-top: 10px;
-            font-size: 18px;
-        }
-
-        .player-wrapper {
-            width: 100%;
-            max-width: 900px;
-            height: 500px;
-            background-color: black;
-            border-radius: 10px;
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.7);
-            margin-top: 20px;
-        }
-
-        #player {
-            width: 100%;
-            height: 100%;
-        }
+        body { font-family: Arial, sans-serif; background: #181818; color: white; margin: 0; }
+        .sidebar { width: 200px; background: #202020; height: 100vh; padding: 20px; position: fixed; }
+        .sidebar a { display: block; color: white; padding: 10px; text-decoration: none; }
+        .sidebar a:hover { background: #303030; }
+        .content { margin-left: 220px; padding: 20px; }
+        .search-box { width: 100%; padding: 10px; font-size: 16px; }
+        .video-item { margin-top: 10px; cursor: pointer; }
+        img { width: 120px; height: 90px; }
     </style>
 </head>
 <body>
-
-    <!-- Sidebar -->
     <div class="sidebar">
-        <a href="#">Home</a>
-        <a href="#">Explore</a>
-        <a href="#">Library</a>
-        <a href="#">New Playlist</a>
+        <a href="#" onclick="loadHome()">Home</a>
+        <a href="#" onclick="loadExplore()">Explore</a>
+        <a href="#" onclick="loadLibrary()">Library</a>
+        <a href="#" onclick="createPlaylist()">New Playlist</a>
     </div>
-
-    <!-- Main content -->
-    <div class="main-content">
-        <!-- Search bar -->
-        <div class="search-bar">
-            <input type="text" placeholder="Search...">
-        </div>
-
-        <!-- New Release, Most Listen, Trending, etc. -->
-        <div class="section">
-            <div>
-                <div class="section-title">Trending Music</div>
-                <div id="trending-videos"></div>
-            </div>
-        </div>
-
-        <!-- Embedded player -->
-        <div class="player-wrapper">
-            <div id="player"></div>
-        </div>
+    <div class="content">
+        <input type="text" id="search" class="search-box" placeholder="Search for music..." onkeypress="handleSearch(event)">
+        <div id="video-list"></div>
     </div>
 
     <script>
-        // YouTube API Key (replace this with your own YouTube API key)
-        const API_KEY = 'AIzaSyAGtretGxxrfWsqK0RQcvUyDvcVgxJES8g';
-        
-        // Function to load popular music videos
-        function loadTrendingVideos() {
-            fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=US&videoCategoryId=10&key=${API_KEY}`)
-            .then(response => response.json())
-            .then(data => {
-                const videos = data.items;
-                const videoContainer = document.getElementById('trending-videos');
-                videoContainer.innerHTML = ''; // Clear previous content
-                
-                videos.forEach(video => {
-                    const videoElement = document.createElement('div');
-                    videoElement.classList.add('card');
-                    videoElement.innerHTML = `
-                        <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}">
-                        <h3>${video.snippet.title}</h3>
-                    `;
-                    videoContainer.appendChild(videoElement);
-                });
-            })
-            .catch(error => console.log('Error fetching data:', error));
+        const API_KEY = "AIzaSyAGtretGxxrfWsqK0RQcvUyDvcVgxJES8g";
+
+        async function searchMusic(query) {
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&maxResults=10&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            displayVideos(data.items);
         }
 
-        // Load YouTube API
-        function loadYouTubeAPI() {
-            var tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            var firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
-
-        // Create player when API is ready
-        var player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '390',
-                width: '640',
-                videoId: 'dQw4w9WgXcQ', // Default video ID
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        // When player is ready, play the video
-        function onPlayerReady(event) {
-            event.target.playVideo();
-        }
-
-        // Handle state changes
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.ENDED) {
-                console.log('Video has ended');
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                searchMusic(document.getElementById('search').value);
             }
         }
 
-        // Initialize the app
-        loadYouTubeAPI();
-        loadTrendingVideos();  // Load trending videos
+        function displayVideos(videos) {
+            const container = document.getElementById('video-list');
+            container.innerHTML = "";
+            videos.forEach(video => {
+                container.innerHTML += `
+                    <div class="video-item" onclick="playVideo('${video.id.videoId}')">
+                        <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}">
+                        <p>${video.snippet.title}</p>
+                    </div>
+                `;
+            });
+        }
 
-        // Update the trending videos every second
-        setInterval(loadTrendingVideos, 1000);
+        function playVideo(videoId) {
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        }
+
+        function loadHome() {
+            searchMusic("Top music 2024");
+        }
+
+        function loadExplore() {
+            searchMusic("Trending music");
+        }
+
+        function loadLibrary() {
+            alert("Library feature coming soon!");
+        }
+
+        function createPlaylist() {
+            alert("New Playlist feature coming soon!");
+        }
+
+        loadHome(); // Load default homepage content
     </script>
-
 </body>
 </html>
