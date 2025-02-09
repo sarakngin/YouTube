@@ -13,6 +13,7 @@
         .search-box { width: 100%; padding: 10px; font-size: 16px; }
         .video-item { margin-top: 10px; cursor: pointer; }
         img { width: 120px; height: 90px; }
+        #player { width: 100%; height: 360px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -25,6 +26,7 @@
     <div class="content">
         <input type="text" id="search" class="search-box" placeholder="Search for music..." onkeypress="handleSearch(event)">
         <div id="video-list"></div>
+        <iframe id="player" src="" frameborder="0" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -57,7 +59,7 @@
         }
 
         function playVideo(videoId) {
-            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+            document.getElementById('player').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         }
 
         function loadHome() {
